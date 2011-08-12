@@ -138,6 +138,26 @@ module TestLogging
       assert_equal 3, Dir.glob(@glob).length
     end
 
+    def test_log_method_accept_message_and_list_of_objects
+      assert !File.exist?(@fn)
+      fd = File.new @fn, 'w'
+      logger = ::Logging.logger fd, 2, 100
+
+      assert_nothing_raised(ArgumentError) { logger.debug "Debug Message", :arg1, :arg2 }
+      assert_nothing_raised(ArgumentError) { logger.info "Info Message", :arg1, :arg2 }
+      assert_nothing_raised(ArgumentError) { logger.warn "Warn Message", :arg1, :arg2 }
+      assert_nothing_raised(ArgumentError) { logger.error "Error Message", :arg1, :arg2 }
+      assert_nothing_raised(ArgumentError) { logger.fatal "Fatal Message", :arg1, :arg2 }
+
+      logger.close
+      assert fd.closed?
+      assert File.exist?(@fn)
+      assert_equal 1, Dir.glob(@glob).length
+
+      FileUtils.rm_f @fn
+      assert !File.exist?(@fn)
+    end
+
     def test_init_default
       assert_equal({}, @levels)
       assert_equal([], @lnames)
